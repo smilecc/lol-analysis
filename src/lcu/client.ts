@@ -8,6 +8,12 @@ export namespace LCUClient {
     token: string;
   }
 
+  export interface IWSEevent<T = any> {
+    uri: string;
+    eventType: "Create" | "Update" | "Delete";
+    data: T;
+  }
+
   export interface IUserInfo {
     accountId: number;
     displayName: string;
@@ -65,5 +71,22 @@ export namespace LCUClient {
    */
   export function arrayToBlobUrl(array: number[], type = "image/jpeg"): string {
     return URL.createObjectURL(new Blob([new Uint8Array(array)], { type }));
+  }
+
+  export interface IRoomMessage {
+    body: string;
+    fromId: string;
+    fromPid: string;
+    fromSummonerId: number;
+    id: string;
+    isHistorical: boolean;
+    timestamp: string;
+    type: string;
+  }
+
+  export function getRoomMessages(
+    roomId: string
+  ): AxiosPromise<IRoomMessage[]> {
+    return lcuRequest.get(`/lol-chat/v1/conversations/${roomId}/messages`);
   }
 }

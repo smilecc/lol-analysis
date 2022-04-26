@@ -5,6 +5,7 @@ import { useCommonStore } from './stores';
 import { darkTheme, NConfigProvider, NSpin } from 'naive-ui';
 import { LCUClient } from './lcu';
 import MainPanel from '@/components/MainPanel.vue';
+import { retry } from '@/utils';
 
 const state = reactive({});
 const commonStore = useCommonStore();
@@ -14,27 +15,37 @@ async function initData() {
   if (commonStore.lcuClientInfo.processId == 0) {
     commonStore.userInfo = undefined;
     commonStore.userProfileIcon = '';
+    commonStore.loading = false;
     return;
   }
 
   commonStore.loading = true;
-  try {
-    // 加载用户信息
-    const { data: userInfo } = await LCUClient.getUserInfo();
-    commonStore.userInfo = userInfo;
+  retry(async (next) => {
+    try {
+      // 加载用户信息
+      const { data: userInfo } = await LCUClient.getUserInfo();
+      if (!userInfo || !userInfo.displayName) {
+        next();
+        return;
+      }
 
-    // 加载用户图标
-    const { data: iconArray } = await LCUClient.getProfileIcon(userInfo.profileIconId);
-    commonStore.userProfileIcon = LCUClient.arrayToBlobUrl(iconArray);
-  } finally {
-    commonStore.loading = false;
-  }
+      commonStore.userInfo = userInfo;
+
+      // 加载用户图标
+      const { data: iconArray } = await LCUClient.getProfileIcon(userInfo.profileIconId);
+      commonStore.userProfileIcon = LCUClient.arrayToBlobUrl(iconArray);
+
+    } finally {
+      commonStore.loading = false;
+    }
+  }, 3000, 20);
 }
 
 watch(() => commonStore.lcuClientInfo.processId, initData);
 
 onBeforeMount(() => {
   commonStore.subscribeLCUCommand();
+  initData();
 });
 </script>
 
