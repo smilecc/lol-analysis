@@ -2,15 +2,13 @@ import lodash from "lodash";
 import { LCUClient } from "./client";
 import { Event, listen } from "@tauri-apps/api/event";
 
-export interface ILCUEventHandlerCallbackEvent<T = any> {
+export interface ILCUEventHandlerEvent<T = any> {
   name: string;
   data: T;
   sourceEvent: LCUClient.IWSEevent;
 }
 
-export type LCUEventHandlerCallback = (
-  event: ILCUEventHandlerCallbackEvent
-) => void;
+export type LCUEventHandlerCallback = (event: ILCUEventHandlerEvent) => void;
 
 export type LCUEventHandlerCallbackRecord = {
   id: number;
@@ -18,7 +16,7 @@ export type LCUEventHandlerCallbackRecord = {
   eventName: string;
 };
 
-export type ILCUEventHandlerEvent = keyof Omit<
+export type ILCUEventHandlerEvents = keyof Omit<
   { [Key in keyof LCUEventHandler]: any },
   "on"
 >;
@@ -31,7 +29,7 @@ export class LCUEventHandler {
   /**
    * 开始监听
    */
-  startListen(events: ILCUEventHandlerEvent[] = []) {
+  startListen(events: ILCUEventHandlerEvents[] = []) {
     if (this.isSubscribedWS) {
       console.error("已经在监听LCU事件");
       return;
@@ -65,7 +63,7 @@ export class LCUEventHandler {
    * @param event
    * @param callback
    */
-  on(event: ILCUEventHandlerEvent, callback: LCUEventHandlerCallback): number {
+  on(event: ILCUEventHandlerEvents, callback: LCUEventHandlerCallback): number {
     const callbackId = new Date().getTime();
     this.callbacks.push({
       id: callbackId,
@@ -79,7 +77,7 @@ export class LCUEventHandler {
    * 防抖调用事件处理函数
    */
   protected call = lodash.debounce(
-    async (funcName: ILCUEventHandlerEvent, event: LCUClient.IWSEevent) => {
+    async (funcName: ILCUEventHandlerEvents, event: LCUClient.IWSEevent) => {
       if (
         (this.listenEvents.length == 0 ||
           this.listenEvents.includes(funcName)) &&

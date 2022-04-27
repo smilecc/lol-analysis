@@ -14,7 +14,7 @@ export namespace LCUClient {
     data: T;
   }
 
-  export interface IUserInfo {
+  export interface ISummonerInfo {
     accountId: number;
     displayName: string;
     internalName: string;
@@ -43,8 +43,22 @@ export namespace LCUClient {
    * 查询用户基础信息
    * @returns
    */
-  export function getUserInfo(): AxiosPromise<IUserInfo> {
+  export function getCurrentSummoner(): AxiosPromise<ISummonerInfo> {
     return lcuRequest.get("/lol-summoner/v1/current-summoner");
+  }
+
+  export function getSummonerInfo(
+    summonerId: number | string
+  ): AxiosPromise<ISummonerInfo> {
+    return lcuRequest.get(`/lol-summoner/v1/summoners/${summonerId}`);
+  }
+
+  export function listSummoners(
+    summonerIds: number[]
+  ): AxiosPromise<ISummonerInfo[]> {
+    return lcuRequest.get(
+      `/lol-summoner/v2/summoners?ids=${JSON.stringify(summonerIds)}`
+    );
   }
 
   /**
@@ -84,9 +98,28 @@ export namespace LCUClient {
     type: string;
   }
 
+  /**
+   * 查询房间信息
+   * @param roomId
+   * @returns
+   */
   export function getRoomMessages(
     roomId: string
   ): AxiosPromise<IRoomMessage[]> {
     return lcuRequest.get(`/lol-chat/v1/conversations/${roomId}/messages`);
+  }
+
+  export function getRankedStats() {}
+
+  export function listMatchsBySummonerId(summonerId: number) {
+    return lcuRequest.get(
+      `/lol-match-history/v3/matchlist/account/${summonerId}?begIndex=0&endIndex=10`
+    );
+  }
+
+  export function listMatchsByPuuid(puuid: string) {
+    return lcuRequest.get(
+      `/lol-match-history/v1/products/lol/${puuid}/matches?begIndex=0&endIndex=10`
+    );
   }
 }

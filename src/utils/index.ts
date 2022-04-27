@@ -12,11 +12,15 @@ export async function retry(
     }
 
     count++;
-    await new Promise<void>((resolve) => {
+    await new Promise<void>((resolve, reject) => {
       setTimeout(
         async () => {
-          await func(nextTry);
-          resolve();
+          try {
+            await func(nextTry);
+            resolve();
+          } catch {
+            reject();
+          }
         },
         isFirst ? 0 : time
       );

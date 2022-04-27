@@ -62,7 +62,7 @@ impl ClientBuilder {
       client_builder = client_builder.connect_timeout(Duration::from_secs(connect_timeout));
     }
 
-    let client = client_builder.danger_accept_invalid_certs(true).build()?;
+    let client = client_builder.danger_accept_invalid_certs(true).http2_prior_knowledge().build()?;
     Ok(Client(client))
   }
 }

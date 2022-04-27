@@ -2,9 +2,11 @@
 import { onBeforeMount, reactive, watch, computed } from 'vue';
 // import { Base64 } from 'js-base64';
 import { useCommonStore } from './stores';
-import { darkTheme, NConfigProvider, NSpin } from 'naive-ui';
+import { darkTheme, NConfigProvider, NSpin, NIcon, NTooltip } from 'naive-ui';
+import { SettingsSharp, CloseSharp } from '@vicons/ionicons5';
 import { LCUClient } from './lcu';
 import MainPanel from '@/components/MainPanel.vue';
+import ConfigPanel from '@/components/ConfigPanel.vue';
 import { lcuRequest, retry } from '@/utils';
 
 const state = reactive({});
@@ -22,7 +24,7 @@ async function initData() {
   commonStore.loading = true;
   retry(async (next) => {
     // 加载用户信息
-    const { data: userInfo } = await LCUClient.getUserInfo();
+    const { data: userInfo } = await LCUClient.getCurrentSummoner();
     if (!userInfo || !userInfo.displayName) {
       next();
       return;
@@ -63,7 +65,7 @@ onBeforeMount(() => {
   <n-config-provider :theme="darkTheme">
     <n-spin :show="isLoading" description="正在加载数据">
       <div class="min-h-screen bg-zinc-900">
-        <div v-if="!isLoading">
+        <div v-if="!isLoading" v-show="commonStore.panel == 'Main'">
           <div v-if="commonStore.userInfo">
             <main-panel />
           </div>
@@ -72,6 +74,27 @@ onBeforeMount(() => {
             <div class="text-sm mt-3">请先启动客户端</div>
           </div>
         </div>
+        <div v-show="commonStore.panel == 'Config'">
+          <config-panel />
+        </div>
+      </div>
+      <div class="fixed top-8 right-8">
+        <n-tooltip v-if="commonStore.panel == 'Main'">
+          <template #trigger>
+            <n-icon color="#eee" size="20" class="cursor-pointer" @click="commonStore.panel = 'Config'">
+              <settings-sharp />
+            </n-icon>
+          </template>
+          <div>设置</div>
+        </n-tooltip>
+        <n-tooltip v-else-if="commonStore.panel == 'Config'">
+          <template #trigger>
+            <n-icon color="#eee" size="20" class="cursor-pointer" @click="commonStore.panel = 'Main'">
+              <close-sharp />
+            </n-icon>
+          </template>
+          <div>关闭</div>
+        </n-tooltip>
       </div>
     </n-spin>
   </n-config-provider>

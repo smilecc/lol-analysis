@@ -14,8 +14,9 @@ export const useCommonStore = defineStore("common", {
       isLCUSubscribed: false,
       init: false,
       loading: true,
-      userInfo: undefined as LCUClient.IUserInfo | undefined,
+      userInfo: undefined as LCUClient.ISummonerInfo | undefined,
       userProfileIcon: "",
+      panel: "Main" as "Main" | "Config",
     };
   },
   actions: {
@@ -29,7 +30,7 @@ export const useCommonStore = defineStore("common", {
       setInterval(() => emit("load-lcu-command"), 1000);
       listen("lcu-command-info", (event: Event<any>) => {
         if (event.payload) {
-          // 如果之前的进程ID和当前进程ID不一样 则重新出发ws监听
+          // 如果之前的进程ID和当前进程ID不一样 则重新触发ws监听
           if (
             this.lcuClientInfo.processId != event.payload.process_id &&
             event.payload.process_id != 0
