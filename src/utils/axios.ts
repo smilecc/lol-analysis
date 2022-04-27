@@ -1,7 +1,7 @@
 import { http } from "@tauri-apps/api";
 import { Body, ResponseType } from "@tauri-apps/api/http";
 import { useCommonStore } from "@/stores";
-import axios, { AxiosAdapter } from "axios";
+import axios, { AxiosAdapter, AxiosError } from "axios";
 import { Base64 } from "js-base64";
 
 const TauriAdapter: AxiosAdapter = (config) => {
@@ -28,13 +28,27 @@ const TauriAdapter: AxiosAdapter = (config) => {
             : ResponseType.JSON,
       })
       .then((resp) => {
-        resolve({
+        const axiosResponse = {
           status: resp.status,
-          statusText: "ok",
+          statusText: resp.ok ? "ok" : "failed",
           config,
           data: resp.data,
           headers: resp.headers,
-        });
+        };
+
+        if (resp.ok) {
+          resolve(axiosResponse);
+        } else {
+          reject(
+            new AxiosError(
+              `${resp.status}`,
+              `${resp.status}`,
+              config,
+              null,
+              axiosResponse
+            )
+          );
+        }
       })
       .catch((err) => {
         reject(err);
@@ -66,9 +80,21 @@ _lcuAxios.interceptors.request.use(async (config) => {
   return config;
 });
 
-_lcuAxios.interceptors.response.use((response) => {
-  console.log("收到LCU请求响应", response);
-  return response;
-});
+_lcuAxios.interceptors.response.use(
+  (response) => {
+    console.log("收到LCU请求响应", response);
+    return response;
+  },
+  (error: AxiosError) => {
+    console.log("LCU请求失败", error);
+    if (error.isAxiosError) {
+      if (error.response?.status === 401) {
+      } else if (error.response?.status === 400) {
+      } else if (error.response?.status && error.response?.status >= 500) {
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const lcuRequest = _lcuAxios;

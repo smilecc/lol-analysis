@@ -1,23 +1,27 @@
 export * from "./axios";
 
-export function retry(
-  func: (nextTry: () => void) => void,
+export async function retry(
+  func: (nextTry: () => void) => Promise<void>,
   time: number = 1000,
   max: number = 1
 ) {
   let count = 0;
-  const nextTry = (isFirst: boolean = false) => {
-    if (count >= max) {
+  const nextTry = async (isFirst: boolean = false) => {
+    if (count >= max + 1) {
       return;
     }
 
-    if (isFirst) {
-      func(nextTry);
-    } else {
-      count++;
-      setTimeout(() => func(nextTry), time);
-    }
+    count++;
+    await new Promise<void>((resolve) => {
+      setTimeout(
+        async () => {
+          await func(nextTry);
+          resolve();
+        },
+        isFirst ? 0 : time
+      );
+    }).catch(nextTry);
   };
 
-  nextTry(true);
+  await nextTry(true);
 }

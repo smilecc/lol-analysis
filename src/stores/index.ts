@@ -12,6 +12,7 @@ export const useCommonStore = defineStore("common", {
         token: "",
       } as LCUClient.LCUClientInfo,
       isLCUSubscribed: false,
+      init: false,
       loading: true,
       userInfo: undefined as LCUClient.IUserInfo | undefined,
       userProfileIcon: "",
@@ -40,6 +41,9 @@ export const useCommonStore = defineStore("common", {
           this.lcuClientInfo.port = event.payload.port as number;
           this.lcuClientInfo.processId = event.payload.process_id as number;
           this.lcuClientInfo.token = event.payload.token as string;
+          if (this.init == false) {
+            this.init = true;
+          }
         }
         console.debug(event);
       });

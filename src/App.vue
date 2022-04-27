@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { onBeforeMount, reactive, watch } from 'vue';
+import { onBeforeMount, reactive, watch, computed } from 'vue';
 // import { Base64 } from 'js-base64';
 import { useCommonStore } from './stores';
 import { darkTheme, NConfigProvider, NSpin } from 'naive-ui';
 import { LCUClient } from './lcu';
 import MainPanel from '@/components/MainPanel.vue';
-import { retry } from '@/utils';
+import { lcuRequest, retry } from '@/utils';
 
 const state = reactive({});
 const commonStore = useCommonStore();
@@ -21,27 +21,37 @@ async function initData() {
 
   commonStore.loading = true;
   retry(async (next) => {
-    try {
-      // 加载用户信息
-      const { data: userInfo } = await LCUClient.getUserInfo();
-      if (!userInfo || !userInfo.displayName) {
-        next();
-        return;
-      }
-
-      commonStore.userInfo = userInfo;
-
-      // 加载用户图标
-      const { data: iconArray } = await LCUClient.getProfileIcon(userInfo.profileIconId);
-      commonStore.userProfileIcon = LCUClient.arrayToBlobUrl(iconArray);
-
-    } finally {
-      commonStore.loading = false;
+    // 加载用户信息
+    const { data: userInfo } = await LCUClient.getUserInfo();
+    if (!userInfo || !userInfo.displayName) {
+      next();
+      return;
     }
-  }, 3000, 20);
+
+    commonStore.userInfo = userInfo;
+
+    // 加载用户图标
+    const { data: iconArray } = await LCUClient.getProfileIcon(userInfo.profileIconId);
+    commonStore.userProfileIcon = LCUClient.arrayToBlobUrl(iconArray);
+  }, 2000, 20)
+    .finally(() => {
+      commonStore.loading = false;
+      console.log('finish');
+    });
 }
 
 watch(() => commonStore.lcuClientInfo.processId, initData);
+const isLoading = computed(() => {
+  if (commonStore.loading || !commonStore.init) {
+    return true;
+  }
+
+  if (commonStore.lcuClientInfo.processId != 0 && !commonStore.userInfo) {
+    return true;
+  }
+
+  return false;
+});
 
 onBeforeMount(() => {
   commonStore.subscribeLCUCommand();
@@ -51,9 +61,9 @@ onBeforeMount(() => {
 
 <template>
   <n-config-provider :theme="darkTheme">
-    <n-spin :show="commonStore.loading" description="正在加载数据">
+    <n-spin :show="isLoading" description="正在加载数据">
       <div class="min-h-screen bg-zinc-900">
-        <div v-if="!commonStore.loading">
+        <div v-if="!isLoading">
           <div v-if="commonStore.userInfo">
             <main-panel />
           </div>
