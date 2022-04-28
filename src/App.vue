@@ -65,11 +65,11 @@ onBeforeMount(() => {
   <n-config-provider :theme="darkTheme">
     <n-spin :show="isLoading" description="正在加载数据">
       <div class="min-h-screen bg-zinc-900">
-        <div v-if="!isLoading" v-show="commonStore.panel == 'Main'" class="min-h-inherit">
-          <div v-if="commonStore.userInfo" class="min-h-inherit">
+        <div v-show="!isLoading && commonStore.panel == 'Main'" class="min-h-inherit">
+          <div v-show="commonStore.userInfo" class="min-h-inherit">
             <main-panel />
           </div>
-          <div v-else class="flex flex-col items-center justify-center min-h-screen">
+          <div v-show="!commonStore.userInfo" class="flex flex-col items-center justify-center min-h-screen">
             <div class="text-lg">未检测到《英雄联盟》客户端</div>
             <div class="text-sm mt-3">请先启动客户端</div>
           </div>

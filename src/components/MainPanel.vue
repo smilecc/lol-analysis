@@ -3,6 +3,7 @@ import { LCUEventHandler, LCUClient, ILCUEventHandlerEvent, GameScoreCalculator,
 import { IHorse, useCommonStore } from '@/stores';
 import { last, meanBy } from 'lodash';
 import { onBeforeMount, reactive, ref } from 'vue';
+import { NSpin } from 'naive-ui';
 
 interface IGamingSummoner {
   avatarUrl: string;
@@ -19,6 +20,7 @@ interface IGamingSummoner {
 const commonStore = useCommonStore();
 const eventHandler = ref(new LCUEventHandler());
 const state = reactive({
+  loading: false,
   gaming: false,
   summoners: [] as IGamingSummoner[],
   chatRoomId: '',
@@ -29,9 +31,16 @@ onBeforeMount(() => {
 
   eventHandler.value.on('onGameStop', () => {
     state.gaming = false;
+    state.summoners = [];
   });
 
   eventHandler.value.on('onSelectSession', async (event: ILCUEventHandlerEvent<IRoomMessagesEvent>) => {
+    console.log(event.data.roomId);
+    if (state.summoners.length) {
+      return;
+    }
+
+    state.loading = true;
     state.gaming = true;
     console.log('onSelectSession', event);
     state.chatRoomId = event.data.roomId;
@@ -82,6 +91,7 @@ onBeforeMount(() => {
     state.summoners = summoners;
     console.log('玩家信息', summoners);
     sendSummonersHorseMessage();
+    state.loading = false;
   });
 });
 
@@ -103,7 +113,7 @@ async function sendSummonersHorseMessage() {
       const lastStats = lastMatch?.participants[0].stats;
       await LCUClient.sendMessage(
         state.chatRoomId,
-        `我方【${summoner.summoner.displayName}】鉴定为${summoner.horse.name} 上场战绩: ${lastStats?.kills}/${lastStats?.deaths}/${lastStats?.assists} 最近十场KDA: ${summoner.kda.toFixed(2)} 评价得分: ${summoner.score.toFixed(2)}`
+        `我方【${summoner.summoner.displayName}】鉴定为${summoner.horse.name} 上场战绩: ${lastStats?.kills}/${lastStats?.deaths}/${lastStats?.assists} 最近十场KDA: ${summoner.kda.toFixed(2)} 综合评价得分: ${summoner.score.toFixed(2)}`
       );
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
@@ -124,6 +134,7 @@ async function sendSummonersHorseMessage() {
     </div>
 
     <div v-if="state.gaming">
+      <n-spin v-if="state.loading" />
       <div class="mt-5">
         <h1 class="text-xl mb-4">对局玩家</h1>
         <div v-for="summoner in state.summoners" :key="summoner.summonerId" class="flex mb-5">
