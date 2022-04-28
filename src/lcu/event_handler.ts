@@ -21,6 +21,11 @@ export type ILCUEventHandlerEvents = keyof Omit<
   "on"
 >;
 
+export interface IRoomMessagesEvent {
+  roomId: string;
+  messages: LCUClient.IRoomMessage[];
+}
+
 export class LCUEventHandler {
   protected isSubscribedWS = false;
   protected listenEvents: string[] = [];
@@ -105,12 +110,15 @@ export class LCUEventHandler {
    */
   async onSelectSession(
     event: LCUClient.IWSEevent<{ chatDetails: { chatRoomName: string } }>
-  ) {
+  ): Promise<IRoomMessagesEvent | undefined> {
     console.warn("获取到对局会话", event);
     const roomId = event.data.chatDetails.chatRoomName.split("@")[0];
     if (roomId) {
       const roomMessages = await LCUClient.getRoomMessages(roomId);
-      return roomMessages.data;
+      return {
+        messages: roomMessages.data,
+        roomId,
+      };
     }
   }
 

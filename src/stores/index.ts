@@ -2,6 +2,16 @@ import { defineStore } from "pinia";
 import { LCUClient } from "@/lcu";
 import { emit, Event, listen } from "@tauri-apps/api/event";
 import { Base64 } from "js-base64";
+import { CONFIG_STOREAGE } from "@/config";
+
+function loadConfig(): IConfig {
+  const config = window.localStorage.getItem(CONFIG_STOREAGE);
+  if (!config) {
+    return DEFAULT_CONFIG;
+  }
+
+  return JSON.parse(config);
+}
 
 export const useCommonStore = defineStore("common", {
   state: () => {
@@ -17,6 +27,7 @@ export const useCommonStore = defineStore("common", {
       userInfo: undefined as LCUClient.ISummonerInfo | undefined,
       userProfileIcon: "",
       panel: "Main" as "Main" | "Config",
+      config: loadConfig(),
     };
   },
   actions: {
@@ -53,5 +64,55 @@ export const useCommonStore = defineStore("common", {
         console.debug("ws-event", payload);
       });
     },
+    setConfig(config: IConfig) {
+      this.config = config;
+      this.config.horses.sort((l, r) => l.score - r.score);
+      window.localStorage.setItem(CONFIG_STOREAGE, JSON.stringify(this.config));
+    },
   },
 });
+
+export const DEFAULT_CONFIG: IConfig = {
+  sendHorseMessage: true,
+  ignoreSelf: true,
+  scoreExpression:
+    "KDA + sif(WIN, 2) + sif(FIRST_BOOLD, 2) + sif(FIRST_TOWER, 2) + score(VISION_SCORE, 100, 5) + score(MINIONS_KILLS / TIME_MINUTE, 12, 5) + (DAMAGE / GLOD * 1.5) + sif(IS_SUPPORT, 5)",
+  horses: [
+    {
+      name: "牛马",
+      score: 20,
+    },
+    {
+      name: "下等马",
+      score: 30,
+    },
+    {
+      name: "中等马",
+      score: 40,
+    },
+    {
+      name: "上等马",
+      score: 50,
+    },
+    {
+      name: "小代",
+      score: 60,
+    },
+    {
+      name: "通天代",
+      score: 70,
+    },
+  ],
+};
+
+export interface IConfig {
+  sendHorseMessage: boolean;
+  ignoreSelf: boolean;
+  scoreExpression: string;
+  horses: IHorse[];
+}
+
+export interface IHorse {
+  name: string;
+  score: number;
+}

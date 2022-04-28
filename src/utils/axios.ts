@@ -82,7 +82,7 @@ _lcuAxios.interceptors.request.use(async (config) => {
 
 _lcuAxios.interceptors.response.use(
   (response) => {
-    console.log("收到LCU请求响应", response);
+    console.log("收到LCU请求响应", response.config.url, response);
     return response;
   },
   (error: AxiosError) => {

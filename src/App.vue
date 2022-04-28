@@ -65,8 +65,8 @@ onBeforeMount(() => {
   <n-config-provider :theme="darkTheme">
     <n-spin :show="isLoading" description="正在加载数据">
       <div class="min-h-screen bg-zinc-900">
-        <div v-if="!isLoading" v-show="commonStore.panel == 'Main'">
-          <div v-if="commonStore.userInfo">
+        <div v-if="!isLoading" v-show="commonStore.panel == 'Main'" class="min-h-inherit">
+          <div v-if="commonStore.userInfo" class="min-h-inherit">
             <main-panel />
           </div>
           <div v-else class="flex flex-col items-center justify-center min-h-screen">
@@ -74,7 +74,7 @@ onBeforeMount(() => {
             <div class="text-sm mt-3">请先启动客户端</div>
           </div>
         </div>
-        <div v-show="commonStore.panel == 'Config'">
+        <div v-show="commonStore.panel == 'Config'" class="h-full">
           <config-panel />
         </div>
       </div>
@@ -109,5 +109,10 @@ onBeforeMount(() => {
 #app {
   color: #fff;
   font-family: sy-regular, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  user-select: none;
+}
+
+.min-h-inherit {
+  min-height: inherit;
 }
 </style>
