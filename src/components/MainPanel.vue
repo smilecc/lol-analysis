@@ -30,20 +30,15 @@ onBeforeMount(() => {
   eventHandler.value.startListen([]);
 
   /**
-   * 监听游戏对局终止
-   */
-  eventHandler.value.on('onGameStop', () => {
-    state.gaming = false;
-    state.summoners = [];
-  });
-
-  /**
    * 自动接受对局
    */
   eventHandler.value.on('onGameflowPhase', async (event) => {
     if (event.sourceEvent.data == 'ReadyCheck') {
       console.log('等待准备确认');
       await LCUClient.acceptReady();
+    } else if (event.sourceEvent.data == 'Lobby' || event.sourceEvent.data == 'None') {
+      state.gaming = false;
+      state.summoners = [];
     }
   });
 

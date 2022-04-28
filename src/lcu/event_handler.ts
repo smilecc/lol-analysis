@@ -49,8 +49,6 @@ export class LCUEventHandler {
       if (event.uri == "/lol-champ-select-legacy/v1/implementation-active") {
         if (event.data) {
           this.call("onGameStart", event);
-        } else {
-          this.call("onGameStop", event);
         }
       }
 
@@ -61,10 +59,16 @@ export class LCUEventHandler {
         this.call("onSelectSession", event);
       }
 
-      if (
-        event.uri == '/lol-gameflow/v1/gameflow-phase'
-      ) {
+      if (event.uri == "/lol-gameflow/v1/gameflow-phase") {
         this.call("onGameflowPhase", event);
+      }
+
+      if (event.uri == "/lol-summoner/v1/status" && event.data?.ready) {
+        this.call("onClientReady", event);
+      }
+
+      if (event.uri == "/lol-login/v1/session" && event.eventType == "Delete") {
+        this.call("onClientClose", event);
       }
     });
   }
@@ -135,14 +139,15 @@ export class LCUEventHandler {
     console.warn("对局开始", event);
   }
 
-  /**
-   * 处理对局终止
-   */
-  async onGameStop(event: LCUClient.IWSEevent) {
-    console.warn("对局终止", event);
-  }
-
   async onGameflowPhase(event: LCUClient.IWSEevent) {
     console.warn("游戏状态变化", event);
+  }
+
+  async onClientReady(event: LCUClient.IWSEevent) {
+    console.warn("客户端初始化完毕", event);
+  }
+
+  async onClientClose(event: LCUClient.IWSEevent) {
+    console.warn("客户端关闭", event);
   }
 }

@@ -1,25 +1,20 @@
 <script setup lang="ts">
-import { onBeforeMount, reactive, watch, computed } from 'vue';
+import { onBeforeMount, reactive, watch, computed, ref } from 'vue';
 // import { Base64 } from 'js-base64';
 import { useCommonStore } from './stores';
 import { darkTheme, NConfigProvider, NSpin, NIcon, NTooltip } from 'naive-ui';
 import { SettingsSharp, CloseSharp } from '@vicons/ionicons5';
-import { LCUClient } from './lcu';
+import { LCUClient, LCUEventHandler } from './lcu';
 import MainPanel from '@/components/MainPanel.vue';
 import ConfigPanel from '@/components/ConfigPanel.vue';
 import { lcuRequest, retry } from '@/utils';
 
 const state = reactive({});
 const commonStore = useCommonStore();
+const eventHandler = ref(new LCUEventHandler());
 
 async function initData() {
   console.log('更新客户端数据');
-  if (commonStore.lcuClientInfo.processId == 0) {
-    commonStore.userInfo = undefined;
-    commonStore.userProfileIcon = '';
-    commonStore.loading = false;
-    return;
-  }
 
   commonStore.loading = true;
   retry(async (next) => {
@@ -35,14 +30,25 @@ async function initData() {
     // 加载用户图标
     const { data: iconArray } = await LCUClient.getProfileIcon(userInfo.profileIconId);
     commonStore.userProfileIcon = LCUClient.arrayToBlobUrl(iconArray);
-  }, 2000, 20)
+  }, 2000, 10)
     .finally(() => {
       commonStore.loading = false;
       console.log('finish');
     });
 }
 
-watch(() => commonStore.lcuClientInfo.processId, initData);
+function checkClient() {
+  if (commonStore.lcuClientInfo.processId == 0) {
+    commonStore.userInfo = undefined;
+    commonStore.userProfileIcon = '';
+    commonStore.loading = false;
+    return false;
+  }
+
+  return true;
+}
+
+watch(() => commonStore.lcuClientInfo.processId, checkClient);
 const isLoading = computed(() => {
   if (commonStore.loading || !commonStore.init) {
     return true;
@@ -55,9 +61,17 @@ const isLoading = computed(() => {
   return false;
 });
 
-onBeforeMount(() => {
+onBeforeMount(async () => {
   commonStore.subscribeLCUCommand();
-  initData();
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  if (checkClient()) {
+    initData();
+  }
+
+  eventHandler.value.startListen(['onClientReady']);
+  eventHandler.value.on('onClientReady', () => {
+    initData();
+  });
 });
 </script>
 

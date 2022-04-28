@@ -61,7 +61,7 @@ export const useCommonStore = defineStore("common", {
       });
 
       listen("on-ws", (payload) => {
-        console.debug("ws-event", payload);
+        console.debug("ws-event", payload, payload.payload);
       });
     },
     setConfig(config: IConfig) {

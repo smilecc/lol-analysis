@@ -55,10 +55,15 @@ pub fn get_client_command() -> Result<LCUCommandInfo, LCUError> {
         return Err(LCUError::NotFoundLCU());
     };
 
+    let error_command_line = &String::from("");
     let command_line = match command {
         Variant::String(str) => str,
-        _ => todo!(),
+        _ => error_command_line,
     };
+
+    if command_line.len() == 0 {
+        return Err(LCUError::NotFoundLCU());
+    }
 
     let port: i32 = regex_match(Regex::new(r"--app-port=([0-9]*)").unwrap(), command_line)
         .parse()
