@@ -76,10 +76,7 @@ onBeforeMount(async () => {
 });
 
 function openGameScoreDoc() {
-  new WebviewWindow('about', {
-    url: 'https://github.com/smilecc/lol-analysis/blob/master/GameScore.md',
-    title: '评分说明',
-  });
+  window.open('https://github.com/smilecc/lol-analysis/blob/master/GameScore.md');
 }
 
 
