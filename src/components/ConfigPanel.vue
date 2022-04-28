@@ -151,6 +151,10 @@ const HorseColumns: TableColumns = [
           <n-form-item label="自动接受对局">
             <n-switch v-model:value="state.config.autoAcceptReady" />
           </n-form-item>
+          <n-form-item label="调试控制台（重启后生效）">
+            <n-switch v-model:value="state.config.debug" />
+          </n-form-item>
+
         </div>
         <div id="马匹称号">
           <h2>马匹称号</h2>
