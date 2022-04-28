@@ -69,8 +69,15 @@ export class GameScoreCalculator {
     const ast = esprima.parseScript(this.getExpression()).body[0];
     const expression = (ast as any).expression;
     const env = this.getEnv();
+
+    const otherEnv: Record<string, any> = {};
+    for (const key in this.stats) {
+      otherEnv[`_${key}`] = (this.stats as any)[key];
+    }
+
     const score = evaluate(expression, {
       ...env,
+      ...otherEnv,
       sif: (condition: boolean, onTrue: number, onFalse = 0) =>
         condition ? onTrue : onFalse,
       score: this.calcScore,

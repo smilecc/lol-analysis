@@ -73,6 +73,7 @@ export const useCommonStore = defineStore("common", {
 });
 
 export const DEFAULT_CONFIG: IConfig = {
+  autoAcceptReady: true,
   sendHorseMessage: true,
   ignoreSelf: true,
   scoreExpression:
@@ -110,6 +111,7 @@ export interface IConfig {
   ignoreSelf: boolean;
   scoreExpression: string;
   horses: IHorse[];
+  autoAcceptReady: boolean;
 }
 
 export interface IHorse {

@@ -7,6 +7,7 @@ import { NButton, NAnchor, NAnchorLink, NInput, NInputNumber, NList, NListItem, 
 import { CheckmarkSharp, CloseSharp } from '@vicons/ionicons5';
 import { onBeforeMount, reactive, watch, h } from 'vue';
 import { TableColumns } from 'naive-ui/lib/data-table/src/interface';
+import { WebviewWindow } from '@tauri-apps/api/window';
 
 const commonStore = useCommonStore();
 const state = reactive({
@@ -74,6 +75,13 @@ onBeforeMount(async () => {
   state.version = await app.getVersion();
 });
 
+function openGameScoreDoc() {
+  new WebviewWindow('about', {
+    url: 'https://github.com/smilecc/lol-analysis/blob/master/GameScore.md',
+    title: '评分说明',
+  });
+}
+
 
 const HorseColumns: TableColumns = [
   {
@@ -140,6 +148,9 @@ const HorseColumns: TableColumns = [
           <n-form-item label="是否忽略自己的马匹信息">
             <n-switch v-model:value="state.config.ignoreSelf" />
           </n-form-item>
+          <n-form-item label="自动接受对局">
+            <n-switch v-model:value="state.config.autoAcceptReady" />
+          </n-form-item>
         </div>
         <div id="马匹称号">
           <h2>马匹称号</h2>
@@ -153,6 +164,7 @@ const HorseColumns: TableColumns = [
 
           <n-input type="textarea" placeholder="请输入评分计算公式" v-model:value="state.config.scoreExpression" />
           <div class="mt-2">
+            <n-button @click="openGameScoreDoc" type="primary" class="!mr-2">查看公式说明文档</n-button>
             <n-button @click="testEvaluate" icon-placement="right" class="!mr-2">
               模拟计算
               <template #icon>

@@ -60,6 +60,12 @@ export class LCUEventHandler {
       ) {
         this.call("onSelectSession", event);
       }
+
+      if (
+        event.uri == '/lol-gameflow/v1/gameflow-phase'
+      ) {
+        this.call("onGameflowPhase", event);
+      }
     });
   }
 
@@ -134,5 +140,9 @@ export class LCUEventHandler {
    */
   async onGameStop(event: LCUClient.IWSEevent) {
     console.warn("对局终止", event);
+  }
+
+  async onGameflowPhase(event: LCUClient.IWSEevent) {
+    console.warn("游戏状态变化", event);
   }
 }

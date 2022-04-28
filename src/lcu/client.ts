@@ -413,10 +413,24 @@ export namespace LCUClient {
     );
   }
 
+  /**
+   * 发送消息到房间
+   * @param roomId
+   * @param text
+   * @returns
+   */
   export function sendMessage(roomId: string, text: string) {
     return lcuRequest.post(`/lol-chat/v1/conversations/${roomId}/messages`, {
       type: "chat",
       body: text,
     });
+  }
+
+  /**
+   * 接受游戏对局
+   * @returns 
+   */
+  export function acceptReady() {
+    return lcuRequest.post(`/lol-matchmaking/v1/ready-check/accept`, {});
   }
 }
